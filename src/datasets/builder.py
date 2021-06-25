@@ -583,12 +583,14 @@ class DatasetBuilder:
                         shutil.move(downloaded_resource_path, resource_path)
 
     def _save_info(self):
-        lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        _cache_dir_sig = self.get_cache_dir_sig()
+        lock_path = os.path.join(self._cache_dir_root, _cache_dir_sig + ".lock")
         with FileLock(lock_path):
             self.info.write_to_directory(self._cache_dir)
 
     def _save_infos(self):
-        lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        _cache_dir_sig = self.get_cache_dir_sig()
+        lock_path = os.path.join(self._cache_dir_root, _cache_dir_sig + ".lock")
         with FileLock(lock_path):
             DatasetInfosDict(**{self.config.name: self.info}).write_to_directory(self.get_imported_module_dir())
 
