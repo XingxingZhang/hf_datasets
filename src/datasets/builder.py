@@ -122,6 +122,16 @@ class DatasetBuilder:
     # the list of files that should be present. It will be
     # displayed in the dataset documentation.
 
+    def get_cache_dir_sig(self):
+        # may lead to "OSError: [Errno 36] File name too long: "
+        # lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        _cache_dir_sig = self._cache_dir.replace("/", "_")
+        maxlen__cache_dir_sig = 128
+        if len(_cache_dir_sig) > maxlen__cache_dir_sig:
+            _cache_dir_sig = _cache_dir_sig[-maxlen__cache_dir_sig:]
+            print('*** _cache_dir_sig is now', _cache_dir_sig)
+        return _cache_dir_sig
+
     def __init__(
         self,
         cache_dir=None,
@@ -173,15 +183,8 @@ class DatasetBuilder:
         # prepare data dirs
         self._cache_dir_root = os.path.expanduser(cache_dir or HF_DATASETS_CACHE)
         self._cache_dir = self._build_cache_dir()
-        # may lead to "OSError: [Errno 36] File name too long: "
-        # lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
-        _cache_dir_sig = self._cache_dir.replace("/", "_")
-        maxlen__cache_dir_sig = 128
-        if len(_cache_dir_sig) > maxlen__cache_dir_sig:
-            _cache_dir_sig = _cache_dir_sig[-maxlen__cache_dir_sig:]
-            print('*** _cache_dir_sig is now', _cache_dir_sig)
+        _cache_dir_sig = self.get_cache_dir_sig()
         lock_path = os.path.join(self._cache_dir_root, _cache_dir_sig + ".lock")
-        
         with FileLock(lock_path):
             if os.path.exists(self._cache_dir):  # check if data exist
                 if len(os.listdir(self._cache_dir)) > 0:
@@ -404,7 +407,8 @@ class DatasetBuilder:
             )
 
         # Prevent parallel disk operations
-        lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        _cache_dir_sig = self.get_cache_dir_sig()
+        lock_path = os.path.join(self._cache_dir_root, _cache_dir_sig + ".lock")
         with FileLock(lock_path):
             data_exists = os.path.exists(self._cache_dir)
             if data_exists and download_mode == REUSE_DATASET_IF_EXISTS:
