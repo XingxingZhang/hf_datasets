@@ -19,6 +19,7 @@
 # pylint: disable=g-import-not-at-top,g-bad-import-order,wrong-import-position
 
 __version__ = "1.0.1"
+print('###### fixed version 1.0.1 #######')
 
 import pyarrow
 from pyarrow import total_allocated_bytes

@@ -173,7 +173,15 @@ class DatasetBuilder:
         # prepare data dirs
         self._cache_dir_root = os.path.expanduser(cache_dir or HF_DATASETS_CACHE)
         self._cache_dir = self._build_cache_dir()
-        lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        # may lead to "OSError: [Errno 36] File name too long: "
+        # lock_path = os.path.join(self._cache_dir_root, self._cache_dir.replace("/", "_") + ".lock")
+        _cache_dir_sig = self._cache_dir.replace("/", "_")
+        maxlen__cache_dir_sig = 128
+        if len(_cache_dir_sig) > maxlen__cache_dir_sig:
+            _cache_dir_sig = _cache_dir_sig[-maxlen__cache_dir_sig:]
+            print('*** _cache_dir_sig is now', _cache_dir_sig)
+        lock_path = os.path.join(self._cache_dir_root, _cache_dir_sig + ".lock")
+        
         with FileLock(lock_path):
             if os.path.exists(self._cache_dir):  # check if data exist
                 if len(os.listdir(self._cache_dir)) > 0:
